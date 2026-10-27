@@ -1,0 +1,374 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BookNova | Smart Book Explorer</title>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+:root {
+    --bg:#100e1b;
+    --panel:#191629;
+    --card:#211c36;
+    --purple:#b69cff;
+    --cyan:#64f5e5;
+    --text:#f5f2ff;
+    --muted:#a39bb9;
+    --border:#343047;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif}
+nav{background:#141222;border-bottom:1px solid var(--border);padding:18px 7%;display:flex;justify-content:space-between;align-items:center}
+.logo{color:var(--cyan);font:800 25px 'Outfit',sans-serif}
+.logo i{color:var(--purple);margin-right:9px}
+.nav-label{color:var(--muted);font-size:12px}
+.hero{text-align:center;padding:65px 20px 45px;background:radial-gradient(ellipse at 15% 10%,#47307865,transparent 45%),radial-gradient(ellipse at 85% 75%,#146e7050,transparent 40%),#131121;border-bottom:1px solid var(--border)}
+.eyebrow{display:inline-block;color:var(--cyan);border:1px solid #64f5e540;border-radius:30px;padding:8px 15px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px}
+h1{font:800 clamp(39px,6vw,65px) 'Outfit',sans-serif;letter-spacing:-2px;line-height:1.08;margin:22px 0 15px}
+h1 span{background:linear-gradient(90deg,#b69cff,#64f5e5);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--muted);font-size:14px;line-height:1.8}
+.search-box{display:flex;max-width:650px;margin:25px auto 0;padding:7px;background:#1c192c;border:1px solid #5b4d7d;border-radius:14px}
+.search-box:focus-within{border-color:var(--cyan);box-shadow:0 0 25px #64f5e51c}
+.search-box>i{align-self:center;color:var(--cyan);padding:0 14px}
+input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font:14px 'Space Grotesk',sans-serif}
+input::placeholder{color:#817994}
+button{cursor:pointer;font-family:inherit;transition:.2s}
+.primary-btn{border:0;border-radius:9px;background:linear-gradient(110deg,#b69cff,#8e79ee);color:#171128;font-size:13px;font-weight:700;padding:12px 18px}
+.primary-btn:hover{transform:translateY(-2px);box-shadow:0 5px 20px #b69cff35}
+.primary-btn:disabled{opacity:.6;cursor:wait}
+.quick-search{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin-top:18px}
+.chip{padding:9px 14px;border:1px solid #3a344f;background:#201b32;color:#d2cbe4;border-radius:25px;font-size:12px}
+.chip:hover,.chip.active{border-color:var(--cyan);color:var(--cyan)}
+main{max-width:1250px;margin:auto;padding:35px 24px 65px}
+.api-switch{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:17px 20px;margin-bottom:35px}
+.api-title{font-weight:700;font-size:14px}
+.api-title small{display:block;color:var(--muted);font-size:11px;font-weight:400;margin-top:5px}
+.switch-buttons{display:flex;gap:8px;flex-wrap:wrap}
+.api-btn{padding:10px 13px;border:1px solid var(--border);border-radius:8px;background:#211d32;color:var(--muted);font-size:12px}
+.api-btn.active{background:#b69cff1a;border-color:var(--purple);color:var(--purple)}
+.section-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:23px}
+h2{font:700 28px 'Outfit',sans-serif;margin:0 0 7px}
+.subtext,.results-count{color:var(--muted);font-size:12px}
+.results-count{background:#211d33;border:1px solid var(--border);padding:9px 12px;border-radius:20px}
+.book-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.book-card{background:linear-gradient(150deg,#211c36,#191627);border:1px solid var(--border);border-radius:14px;padding:12px;min-width:0;animation:appear .4s ease both;transition:.25s}
+.book-card:hover{transform:translateY(-6px);border-color:#8872c5;box-shadow:0 12px 30px #0004}
+@keyframes appear{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.cover-wrap{height:220px;position:relative;overflow:hidden;border-radius:9px;background:radial-gradient(circle at top,#413263,transparent 70%),#171426;display:flex;align-items:center;justify-content:center}
+.cover{width:100%;height:100%;object-fit:contain}
+.cover-placeholder{padding:20px;text-align:center;color:var(--purple);font:700 20px 'Outfit',sans-serif}
+.fav-btn{position:absolute;right:9px;top:9px;width:35px;height:35px;border-radius:50%;color:var(--text);background:#171426ed;border:1px solid #51466b}
+.fav-btn.active{color:#ff82b2;border-color:#ff82b2}
+.book-info{padding:14px 3px 4px}
+.book-title{font:600 16px 'Outfit',sans-serif;line-height:1.4;margin:0 0 8px;overflow-wrap:anywhere}
+.author{font-size:12px;line-height:1.6;color:var(--muted);margin-bottom:11px}
+.author i{color:var(--cyan);margin-right:5px}
+.year{display:inline-block;padding:5px 8px;border:1px solid #39334e;border-radius:6px;background:#252038;color:#c5b6ff;font-size:11px}
+.book-link{display:block;text-align:center;margin-top:13px;padding:10px 7px;border:1px solid #494064;border-radius:8px;text-decoration:none;color:var(--cyan);font-size:12px;font-weight:600}
+.book-link:hover{background:var(--cyan);color:#151326}
+#status{text-align:center;padding:38px 15px;color:var(--muted);font-size:14px}
+#status>i{color:var(--cyan)}
+.spinner{width:35px;height:35px;border:3px solid #39334e;border-top-color:var(--cyan);border-radius:50%;margin:auto;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+.more-wrap{text-align:center;margin-top:30px}
+footer{text-align:center;background:#141222;border-top:1px solid var(--border);color:var(--muted);padding:23px;font-size:12px}
+footer strong{color:var(--cyan)}
+@media(max-width:900px){.book-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){nav{padding:16px 5%}.hero{padding:45px 14px 35px}main{padding:25px 13px 40px}.book-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.cover-wrap{height:175px}.book-card{padding:9px}.book-title{font-size:14px}.search-box>i{padding:0 8px}.primary-btn{padding:11px}.section-head{align-items:flex-start}.api-switch{padding:14px}.results-count{max-width:120px;text-align:center}}
+</style>
+</head>
+
+<body>
+<nav>
+    <div class="logo"><i class="fa-solid fa-book-open"></i> BookNova</div>
+    <div class="nav-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Smart Book Explorer</div>
+</nav>
+
+<header class="hero">
+    <div class="eyebrow"><i class="fa-solid fa-sparkles"></i> Your next chapter starts here</div>
+    <h1>Find your story.<br><span>Explore the unknown.</span></h1>
+    <p>Discover books, explore authors and find your next favourite read.</p>
+
+    <form id="searchForm" class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="search" id="searchInput" placeholder="Search by title, author or topic..." aria-label="Search books">
+        <button class="primary-btn" type="submit" id="searchBtn">Search <i class="fa-solid fa-arrow-right"></i></button>
+    </form>
+
+    <div class="quick-search">
+        <button class="chip" data-query="fiction">📚 Fiction</button>
+        <button class="chip" data-query="science">🔬 Science</button>
+        <button class="chip" data-query="history">🏛 History</button>
+        <button class="chip" data-query="technology">💻 Technology</button>
+        <button class="chip" data-query="self help">✨ Self Growth</button>
+    </div>
+</header>
+
+<main>
+    <div class="api-switch">
+        <div class="api-title"><i class="fa-solid fa-code-branch" style="color:var(--cyan)"></i> API Source
+            <small id="apiDescription">Choose a data source to load books.</small>
+        </div>
+        <div class="switch-buttons">
+            <button class="api-btn active" data-api="real"><i class="fa-solid fa-globe"></i> Real API</button>
+            <button class="api-btn" data-api="demo"><i class="fa-solid fa-flask"></i> Hypothetical API Demo</button>
+        </div>
+    </div>
+
+    <div class="section-head">
+        <div>
+            <h2 id="sectionTitle">Explore the Library</h2>
+            <div class="subtext" id="sectionSubtitle">Choose an API source and discover books.</div>
+        </div>
+        <div class="results-count" id="resultCount">Ready to explore</div>
+    </div>
+
+    <div id="status">
+        <i class="fa-solid fa-book-open" style="font-size:36px"></i>
+        <p>Your next favourite book is waiting.</p>
+        <button class="primary-btn" id="loadBooks"><i class="fa-solid fa-cloud-arrow-down"></i> Load Books</button>
+    </div>
+
+    <div id="bookGrid" class="book-grid"></div>
+
+    <div class="more-wrap hidden" id="moreWrap">
+        <button class="primary-btn" id="loadMore">Load More Books <i class="fa-solid fa-arrow-down"></i></button>
+    </div>
+</main>
+
+<footer><strong>BookNova</strong> · Powered by jQuery AJAX and book APIs</footer>
+
+<script>
+$(function(){
+    let apiMode = "real";
+    let currentQuery = "fiction";
+    let currentPage = 1;
+    let loading = false;
+
+    // Hypothetical API sample response.
+    // api.example.com is a placeholder and is not a real data service.
+    const demoBooks = [
+        {title:"The Silent Library",author:"A. Morgan",year:2024,description:"A mystery among forgotten books.",color:"#4e3d78"},
+        {title:"Beyond the Stars",author:"L. Bennett",year:2023,description:"An adventure across the universe.",color:"#244b70"},
+        {title:"The Art of Focus",author:"J. Williams",year:2022,description:"Ideas for learning and productivity.",color:"#28665e"},
+        {title:"Echoes of History",author:"R. Carter",year:2021,description:"Stories that shaped our world.",color:"#82513e"},
+        {title:"Digital Horizons",author:"M. Cooper",year:2024,description:"Exploring tomorrow's technology.",color:"#514b8c"},
+        {title:"The Hidden Garden",author:"S. Taylor",year:2020,description:"A heartwarming fictional journey.",color:"#416c48"},
+        {title:"Science of Everything",author:"P. Anderson",year:2023,description:"Discover the wonders of science.",color:"#71513e"},
+        {title:"A Thousand Dreams",author:"E. Parker",year:2022,description:"A story about hope and courage.",color:"#7b426c"}
+    ];
+
+    function esc(value){
+        return $("<div>").text(value == null ? "" : String(value)).html();
+    }
+
+    function loadingView(){
+        $("#status").removeClass("hidden").html(
+            '<div class="spinner"></div><p>Discovering your next read...</p>'
+        );
+    }
+
+    function renderBooks(books,append,total){
+        if(!append) $("#bookGrid").empty();
+
+        if(!books.length && !append){
+            $("#status").removeClass("hidden").html(
+                '<i class="fa-solid fa-book-open" style="font-size:35px"></i><p>No books found. Try another search.</p>'
+            );
+            $("#resultCount").text("0 results");
+            $("#moreWrap").addClass("hidden");
+            return;
+        }
+
+        $("#status").addClass("hidden");
+
+        books.forEach(function(book){
+            const title=book.title || "Untitled";
+            const author=book.author || (book.author_name || ["Unknown author"]).slice(0,2).join(", ");
+            const year=book.year || book.first_publish_year || "Not available";
+            const cover=book.cover_i ? "https://covers.openlibrary.org/b/id/"+book.cover_i+"-M.jpg" : "";
+            const bookUrl=book.key ? "https://openlibrary.org"+book.key : "https://openlibrary.org";
+
+            const card=$(`
+                <article class="book-card">
+                    <div class="cover-wrap">
+                        <div class="cover-placeholder">${esc(title)}</div>
+                        <button class="fav-btn" aria-label="Add to favourites" title="Add to favourites">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="book-info">
+                        <h3 class="book-title">${esc(title)}</h3>
+                        <div class="author"><i class="fa-solid fa-feather-pointed"></i> ${esc(author)}</div>
+                        <span class="year"><i class="fa-regular fa-calendar"></i> ${esc(year)}</span>
+                        <a class="book-link" target="_blank" rel="noopener noreferrer" href="${esc(bookUrl)}">
+                            Explore Book <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                    </div>
+                </article>
+            `);
+
+            if(cover){
+                const img=$("<img>",{class:"cover",alt:"Cover of "+title,loading:"lazy"}).attr("src",cover);
+                img.on("load",function(){card.find(".cover-placeholder").hide();});
+                img.on("error",function(){$(this).remove();card.find(".cover-placeholder").show();});
+                card.find(".cover-wrap").prepend(img);
+            } else if(book.color){
+                card.find(".cover-wrap").css("background",
+                    "linear-gradient(145deg,"+book.color+",#171426)");
+                card.find(".cover-placeholder").css("color","#ffffff");
+            }
+
+            card.find(".fav-btn").on("click",function(){
+                const btn=$(this);
+                const active=btn.hasClass("active");
+                btn.toggleClass("active",!active);
+                btn.find("i").toggleClass("fa-solid",!active).toggleClass("fa-regular",active);
+                btn.attr("aria-label",active?"Add to favourites":"Remove from favourites");
+                btn.attr("title",active?"Add to favourites":"Added to favourites");
+            });
+
+            $("#bookGrid").append(card);
+        });
+
+        $("#resultCount").text(
+            $("#bookGrid .book-card").length+" displayed"+(total != null ? " · "+Number(total).toLocaleString()+" results" : "")
+        );
+
+        $("#moreWrap").toggleClass("hidden",apiMode==="demo" || books.length<12);
+    }
+
+    function loadBooks(query,page,append){
+        if(loading)return;
+        loading=true;
+
+        if(!append){
+            $("#bookGrid").empty();
+            $("#moreWrap").addClass("hidden");
+            loadingView();
+        }else{
+            $("#loadMore").prop("disabled",true).text("Loading...");
+        }
+        $("#searchBtn").prop("disabled",true);
+
+        if(apiMode==="demo"){
+            // Simulate a hypothetical API's JSON response.
+            // No external request is sent because this endpoint does not exist.
+            setTimeout(function(){
+                const term=query.toLowerCase();
+                let filtered=demoBooks.filter(function(book){
+                    return (book.title+" "+book.author+" "+book.description).toLowerCase().includes(term)
+                        || term==="fiction" || term==="subject:fiction";
+                });
+
+                if(!filtered.length && term){
+                    filtered=demoBooks.filter(function(book){
+                        return book.title.toLowerCase().includes(term)
+                            || book.author.toLowerCase().includes(term);
+                    });
+                }
+
+                renderBooks(filtered,null,filtered.length);
+                $("#apiDescription").text("Hypothetical API demonstration using sample JSON data.");
+                finish();
+            },500);
+            return;
+        }
+
+        $.ajax({
+            url:"https://openlibrary.org/search.json",
+            method:"GET",
+            dataType:"json",
+            data:{
+                q:query,
+                page:page,
+                limit:12,
+                fields:"key,title,author_name,first_publish_year,cover_i"
+            },
+            success:function(response){
+                const books=response.docs||[];
+                renderBooks(books,append,response.numFound||0);
+                $("#apiDescription").text("Real Open Library API · Live JSON response.");
+            },
+            error:function(){
+                $("#status").removeClass("hidden").html(
+                    '<i class="fa-solid fa-triangle-exclamation" style="font-size:35px"></i>'+
+                    '<p>Could not connect to the real API. Check your internet connection.</p>'+
+                    '<button class="primary-btn" id="retry">Try Again</button>'
+                );
+            },
+            complete:finish
+        });
+    }
+
+    function finish(){
+        loading=false;
+        $("#searchBtn").prop("disabled",false);
+        $("#loadMore").prop("disabled",false).html('Load More Books <i class="fa-solid fa-arrow-down"></i>');
+    }
+
+    function search(query){
+        currentQuery=query;
+        currentPage=1;
+        $("#sectionTitle").text("Search Results");
+        $("#sectionSubtitle").text('Books matching "'+query+'"');
+        loadBooks(currentQuery,currentPage,false);
+    }
+
+    $(".api-btn").on("click",function(){
+        if(loading)return;
+        apiMode=$(this).data("api");
+        $(".api-btn").removeClass("active");
+        $(this).addClass("active");
+        currentPage=1;
+
+        if(apiMode==="demo"){
+            $("#apiDescription").text("Hypothetical API demonstration using sample JSON.");
+            $("#sectionTitle").text("Sample Book Collection");
+        }else{
+            $("#apiDescription").text("Real Open Library API · Live book data.");
+            $("#sectionTitle").text("Live Book Collection");
+        }
+        loadBooks(currentQuery,1,false);
+    });
+
+    $("#loadBooks").on("click",function(){
+        currentQuery="fiction";
+        currentPage=1;
+        $("#searchInput").val("");
+        loadBooks(currentQuery,1,false);
+    });
+
+    $("#searchForm").on("submit",function(e){
+        e.preventDefault();
+        const query=$("#searchInput").val().trim();
+        if(!query){$("#searchInput").focus();return;}
+        search(query);
+    });
+
+    $(".chip").on("click",function(){
+        $(".chip").removeClass("active");
+        $(this).addClass("active");
+        $("#searchInput").val($(this).data("query"));
+        search($(this).data("query"));
+    });
+
+    $("#loadMore").on("click",function(){
+        if(loading || apiMode==="demo")return;
+        currentPage++;
+        loadBooks(currentQuery,currentPage,true);
+    });
+
+    $(document).on("click","#retry",function(){
+        loadBooks(currentQuery,currentPage,false);
+    });
+});
+</script>
+</body>
+</html>
